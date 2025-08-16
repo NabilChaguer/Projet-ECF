@@ -30,7 +30,7 @@ services:
 
   db:
     image: mariadb:10.6
-    container_name: laravel_db
+    container_name: db
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
@@ -41,6 +41,21 @@ services:
       - "3306:3306"
     volumes:
       - dbdata:/var/lib/mysql
+    networks:
+      - laravel_network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: laravel_phpmyadmin
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: db
+      PMA_USER: studi_app
+      PMA_PASSWORD: UWNgDo0M6wr1Ls
+    depends_on:
+      - db
     networks:
       - laravel_network
 
