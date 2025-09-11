@@ -1,4 +1,6 @@
 import './bootstrap';
+import flatpickr from "flatpickr";
+import "flatpickr/dist/flatpickr.min.css";
 
 window.addEventListener('scroll', function() {
     const navbar = document.getElementById('navbar');
@@ -7,4 +9,11 @@ window.addEventListener('scroll', function() {
     } else {
         navbar.classList.remove('scrolled');
     }
+});
+
+flatpickr("#date", {
+    dateFormat: "Y-m-d",
+    altInput: true,
+    altFormat: "d/m/Y",
+    minDate: "today",
 });
