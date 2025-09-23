@@ -17,7 +17,6 @@ class Covoiturage extends Model
         'date_arrivee',
         'heure_arrivee',
         'statut',
-        'ecologique',
     ];
 
     public function voiture()

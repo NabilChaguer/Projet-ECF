@@ -4,68 +4,114 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Covoiturage;
+use Illuminate\Support\Facades\DB;
 
 class CovoiturageController extends Controller
 {
-    public function index()
+    // Page principale
+    public function index(Request $request)
     {
-        // Au départ, aucune recherche, on envoie des collections vides
-        $covoiturages = collect();
-        $alternatives = collect();
+        $searchActive = session()->has('covoiturages');
 
-        return view('covoiturage', compact('covoiturages', 'alternatives'));
+        $covoiturages  = $searchActive ? session('covoiturages', collect()) : collect();
+        $alternatives  = $searchActive ? session('alternatives', collect()) : collect();
+        $raison        = $searchActive ? session('raison', null) : null;
+        $filters       = $searchActive ? session('filters', []) : [];
+
+        return view('covoiturage', compact(
+            'covoiturages',
+            'alternatives',
+            'raison',
+            'filters',
+            'searchActive'
+        ));
     }
 
+    // Recherche + filtres
     public function search(Request $request)
     {
         $request->validate([
-            'departure' => 'required|string',
-            'arrival'   => 'required|string',
-            'date'      => 'nullable|date',
+            'departure'  => 'required|string|max:255',
+            'arrival'    => 'required|string|max:255',
+            'date'       => 'nullable|date',
+            'prix_max'   => 'nullable|numeric|min:0',
+            'duree_max'  => 'nullable|numeric|min:1',
+            'note_min'   => 'nullable|numeric|min:0|max:5',
+            'ecologique' => 'nullable|in:0,1',
         ]);
 
-        // Recherche de covoiturages avec places disponibles
-        $query = Covoiturage::query()->where('nb_place', '>', 0);
+        $baseQuery = Covoiturage::query()
+            ->where('nb_place', '>', 0)
+            ->whereRaw('LOWER(lieu_depart) LIKE ?', ['%' . mb_strtolower($request->departure) . '%'])
+            ->whereRaw('LOWER(lieu_arrivee) LIKE ?', ['%' . mb_strtolower($request->arrival) . '%']);
 
-        // Recherche flexible (insensible à la casse)
-        $query->whereRaw('LOWER(lieu_depart) LIKE ?', ['%' . mb_strtolower($request->departure) . '%'])
-              ->whereRaw('LOWER(lieu_arrivee) LIKE ?', ['%' . mb_strtolower($request->arrival) . '%']);
-
-        // Filtre sur la date exacte si fournie
         if ($request->filled('date')) {
-            $query->whereDate('date_depart', $request->date);
+            $baseQuery->whereDate('date_depart', $request->date);
         }
 
-        $covoiturages = $query->with(['voiture.utilisateur', 'avis'])->get();
-        $alternatives = collect();
+        $covoituragesAvantFiltres = (clone $baseQuery)
+            ->with(['voiture.utilisateur', 'avis'])
+            ->get();
 
-        // ======= SI PAS DE RESULTATS EXACTS =======
-        if ($covoiturages->isEmpty()) {
+        $query = (clone $baseQuery);
 
-            $alternativesQuery = Covoiturage::where('nb_place', '>', 0)
-                ->whereRaw('LOWER(lieu_depart) LIKE ?', ['%' . mb_strtolower($request->departure) . '%'])
-                ->whereRaw('LOWER(lieu_arrivee) LIKE ?', ['%' . mb_strtolower($request->arrival) . '%']);
+        if ($request->filled('prix_max')) {
+            $query->where('prix_personne', '<=', $request->prix_max);
+        }
 
-            $alternatives = $alternativesQuery
-                ->with(['voiture.utilisateur', 'avis'])
-                ->orderBy('date_depart', 'asc')
-                ->take(3)
-                ->get();
+        if ($request->filled('duree_max')) {
+            $query->whereRaw("
+                TIMESTAMPDIFF(
+                    MINUTE,
+                    CONCAT(date_depart, ' ', heure_depart),
+                    CONCAT(date_arrivee, ' ', heure_arrivee)
+                ) <= ?
+            ", [$request->duree_max]);
+        }
 
-            // Si toujours vide, proposer les 3 prochains trajets liés aux bonnes villes
-            if ($alternatives->isEmpty()) {
-                $alternatives = Covoiturage::where('nb_place', '>', 0)
-                    ->whereRaw('LOWER(lieu_depart) LIKE ?', ['%' . mb_strtolower($request->departure) . '%'])
-                    ->whereRaw('LOWER(lieu_arrivee) LIKE ?', ['%' . mb_strtolower($request->arrival) . '%'])
-                    ->with(['voiture.utilisateur', 'avis'])
-                    ->orderBy('date_depart', 'asc')
-                    ->take(3)
-                    ->get();
+        if ($request->filled('note_min')) {
+            $noteMin = (float) $request->note_min;
+
+            $idsWithAvg = DB::table('avis')
+                ->select('covoiturage_id', DB::raw('AVG(note) as avg_note'))
+                ->groupBy('covoiturage_id')
+                ->havingRaw('AVG(note) >= ?', [$noteMin])
+                ->pluck('covoiturage_id')
+                ->toArray();
+
+            if (!empty($idsWithAvg)) {
+                $query->whereIn('id', $idsWithAvg);
+            } else {
+                $query->whereRaw('0 = 1');
             }
         }
 
-        return view('covoiturage', compact('covoiturages', 'alternatives'));
+        if ($request->filled('ecologique') && $request->ecologique == '1') {
+            $query->where('ecologique', true);
+        }
 
+        $covoiturages = $query->with(['voiture.utilisateur', 'avis'])->get();
+
+        $alternatives = collect();
+        $raison = null;
+
+        if ($covoituragesAvantFiltres->isEmpty()) {
+            $raison = 'aucun_resultat';
+        } elseif ($covoiturages->isEmpty()) {
+            $raison = 'filtres';
+            $alternatives = $covoituragesAvantFiltres->sortBy('date_depart')->take(3);
+        }
+
+        return redirect()->route('covoiturages.index')->with([
+            'covoiturages' => $covoiturages,
+            'alternatives' => $alternatives,
+            'raison'       => $raison,
+            'filters'      => $request->only([
+                'departure', 'arrival', 'date',
+                'prix_max', 'duree_max', 'note_min', 'ecologique'
+            ]),
+        ]);
     }
 }
+
 
