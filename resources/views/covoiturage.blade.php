@@ -146,10 +146,48 @@
                                     </div>
                                 </div>
 
-                                <div>
-                                    <a href="#" class="btn btn-dark">Détails</a>
-                                </div>
+                                <!-- Bouton Détails -->
+                                <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#modalCovoiturage{{ $covoiturage->id }}">
+                                    Détails
+                                </button>
 
+                                <!-- Modal -->
+                                <div class="modal fade" id="modalCovoiturage{{ $covoiturage->id }}" tabindex="-1" aria-labelledby="modalLabel{{ $covoiturage->id }}" aria-hidden="true">
+                                    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                                        <div class="modal-content shadow-lg">
+                                            <div class="modal-header bg-dark text-white">
+                                                <h5 class="modal-title" id="modalLabel{{ $covoiturage->id }}">
+                                                    🚗 Trajet {{ $covoiturage->lieu_depart }} → {{ $covoiturage->lieu_arrivee }}
+                                                </h5>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p><strong>Départ :</strong> {{ $covoiturage->lieu_depart }} - {{ \Carbon\Carbon::parse($covoiturage->date_depart)->format('d/m/Y H:i') }}</p>
+                                                <p><strong>Arrivée :</strong> {{ $covoiturage->lieu_arrivee }} - {{ \Carbon\Carbon::parse($covoiturage->date_arrivee)->format('d/m/Y H:i') }}</p>
+                                                <p><strong>Prix :</strong> {{ $covoiturage->prix_personne }} € / personne</p>
+                                                <p><strong>Places restantes :</strong> {{ $covoiturage->nb_place }}</p>
+                                                <p><strong>Conducteur :</strong> {{ optional($covoiturage->voiture->utilisateur)->pseudo ?? 'N/A' }}</p>
+                                                <p><strong>Note moyenne :</strong> ⭐ {{ $covoiturage->avis->avg('note') ? number_format($covoiturage->avis->avg('note'),1) : '0' }}/5</p>
+                                                @if($covoiturage->avis->count() > 0) <p><strong>Avis des passagers :</strong></p>
+                                                    <ul>
+                                                        @foreach($covoiturage->avis as $avis)
+                                                            <li>"{{ $avis->commentaire }}" — ⭐ {{ $avis->note }}/5</li>
+                                                        @endforeach
+                                                    </ul>
+                                                @else
+                                                    <p><em>Aucun avis pour ce conducteur.</em></p>
+                                                @endif
+                                                <p><strong>Type :</strong> {{ $covoiturage->ecologique ? 'Voyage écologique 🌱' : 'Classique 🚗' }}</p>
+                                                <p><strong>Véhicule :</strong> {{ $covoiturage->voiture->marque ?? 'N/A' }} {{ $covoiturage->voiture->modele ?? '' }} ({{ $covoiturage->voiture->energie ?? 'inconnu' }})</p>
+                                                <p><strong>Préférences conducteur :</strong> {{ $covoiturage->voiture->utilisateur->preferences ?? 'Non renseignées' }}</p>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                                                <a href="#" class="btn btn-success">Réserver</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -192,10 +230,48 @@
                                     </div>
                                 </div>
 
-                                <div>
-                                    <a href="#" class="btn btn-dark">Détails</a>
-                                </div>
+                                <!-- Bouton Détails -->
+                                <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#modalCovoiturage{{ $covoiturage->id }}">
+                                    Détails
+                                </button>
 
+                                <!-- Modal -->
+                                <div class="modal fade" id="modalCovoiturage{{ $covoiturage->id }}" tabindex="-1" aria-labelledby="modalLabel{{ $covoiturage->id }}" aria-hidden="true">
+                                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                                        <div class="modal-content shadow-lg">
+                                            <div class="modal-header bg-dark text-white">
+                                                <h5 class="modal-title" id="modalLabel{{ $covoiturage->id }}">
+                                                    🚗 Trajet {{ $covoiturage->lieu_depart }} → {{ $covoiturage->lieu_arrivee }}
+                                                </h5>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p><strong>Départ :</strong> {{ $covoiturage->lieu_depart }} - {{ \Carbon\Carbon::parse($covoiturage->date_depart)->format('d/m/Y H:i') }}</p>
+                                                <p><strong>Arrivée :</strong> {{ $covoiturage->lieu_arrivee }} - {{ \Carbon\Carbon::parse($covoiturage->date_arrivee)->format('d/m/Y H:i') }}</p>
+                                                <p><strong>Prix :</strong> {{ $covoiturage->prix_personne }} € / personne</p>
+                                                <p><strong>Places restantes :</strong> {{ $covoiturage->nb_place }}</p>
+                                                <p><strong>Conducteur :</strong> {{ optional($covoiturage->voiture->utilisateur)->pseudo ?? 'N/A' }}</p>
+                                                <p><strong>Note moyenne :</strong> ⭐ {{ $covoiturage->avis->avg('note') ? number_format($covoiturage->avis->avg('note'),1) : '0' }}/5</p>
+                                                @if($covoiturage->avis->count() > 0) <p><strong>Avis des passagers :</strong></p>
+                                                    <ul>
+                                                        @foreach($covoiturage->avis as $avis)
+                                                            <li>"{{ $avis->commentaire }}" — ⭐ {{ $avis->note }}/5</li>
+                                                        @endforeach
+                                                    </ul>
+                                                @else
+                                                    <p><em>Aucun avis pour ce conducteur.</em></p>
+                                                @endif
+                                                <p><strong>Type :</strong> {{ $covoiturage->ecologique ? 'Voyage écologique 🌱' : 'Classique 🚗' }}</p>
+                                                <p><strong>Véhicule :</strong> {{ $covoiturage->voiture->marque ?? 'N/A' }} {{ $covoiturage->voiture->modele ?? '' }} ({{ $covoiturage->voiture->energie ?? 'inconnu' }})</p>
+                                                <p><strong>Préférences conducteur :</strong> {{ $covoiturage->voiture->utilisateur->preferences ?? 'Non renseignées' }}</p>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                                                <a href="#" class="btn btn-success">Réserver</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                         </div>
                     </div>
                 @endforeach
