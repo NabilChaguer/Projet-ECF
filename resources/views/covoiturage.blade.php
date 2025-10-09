@@ -115,6 +115,20 @@
         </div>
     @endif
 
+    <div class="container mt-4">
+
+        {{-- Messages de retour --}}
+        @if(session('success'))
+            <div class="alert alert-success text-center shadow-sm rounded-3">
+                {{ session('success') }}
+            </div>
+        @endif
+        @if(session('error'))
+            <div class="alert alert-danger text-center shadow-sm rounded-3">
+                {{ session('error') }}
+            </div>
+        @endif
+
 {{-- Résultats --}}
 @if(!empty($searchActive))
     @if($covoiturages->isNotEmpty())
@@ -183,7 +197,18 @@
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                                                <a href="#" class="btn btn-success">Réserver</a>
+                                                @if(Auth::check())
+                                                    @if($covoiturage->nb_place > 0)
+                                                        <form action="{{ route('covoiturage.reserver', $covoiturage->covoiturage_id) }}" method="POST" class="m-0">
+                                                            @csrf
+                                                            <button type="submit" class="btn btn-success">Participer à ce covoiturage</button>
+                                                        </form>
+                                                    @else
+                                                        <button class="btn btn-secondary" disabled>Aucune place disponible</button>
+                                                    @endif
+                                                @else
+                                                    <a href="{{ route('login') }}" class="btn btn-outline-dark">Se connecter pour réserver</a>
+                                                @endif
                                             </div>
                                         </div>
                                     </div>
@@ -267,7 +292,19 @@
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                                                <a href="#" class="btn btn-success">Réserver</a>
+                                                    @if(Auth::check())
+                                                        @if($covoiturage->nb_place > 0)
+                                                            <form action="{{ route('covoiturage.reserver', $covoiturage->covoiturage_id) }}" method="POST" class="m-0">
+                                                                @csrf
+                                                                <button type="submit" class="btn btn-success">Participer à ce covoiturage</button>
+                                                            </form>
+                                                        @else
+                                                            <button class="btn btn-secondary" disabled>Aucune place disponible</button>
+                                                        @endif
+                                                    @else
+                                                        <a href="{{ route('login') }}" class="btn btn-outline-dark">Se connecter pour réserver</a>
+                                                    @endif
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -282,6 +319,8 @@
             <p class="text-center fw-bold mt-4 text-danger">Aucun covoiturage trouvé. Essayez de modifier vos critères.</p>
         @endif
     @endif
+
+</div>
 </section>
 </main>
 @endsection
