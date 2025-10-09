@@ -22,6 +22,7 @@ return new class extends Migration
             $table->date('date_naissance');
             $table->string('photo')->nullable();
             $table->string('pseudo')->unique();
+            $table->integer('credit')->default(0);
             $table->timestamps();
         });
     }

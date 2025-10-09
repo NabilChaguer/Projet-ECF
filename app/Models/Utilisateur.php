@@ -2,10 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
-class Utilisateur extends Model
+class Utilisateur extends Authenticatable
 {
+    use Notifiable;
+
+    protected $table = 'utilisateurs';
     protected $fillable = [
         'nom',
         'prenom',
@@ -16,6 +20,7 @@ class Utilisateur extends Model
         'date_naissance',
         'photo',
         'pseudo',
+        'credit',
     ];
 
  
@@ -37,5 +42,10 @@ class Utilisateur extends Model
     public function roles()
     {
         return $this->belongsToMany(Role::class, 'role_utilisateur', 'utilisateur_id', 'role_id');
+    }
+
+    public function reservations()
+    {
+        return $this->hasMany(Reservation::class, 'utilisateur_id');
     }
 }

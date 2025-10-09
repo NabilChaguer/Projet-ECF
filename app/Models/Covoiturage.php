@@ -28,4 +28,9 @@ class Covoiturage extends Model
     {
         return $this->hasMany(Avis::class, 'covoiturage_id');
     }
+
+    public function reservations()
+    {
+        return $this->hasMany(Reservation::class, 'covoiturage_id');
+    }
 }

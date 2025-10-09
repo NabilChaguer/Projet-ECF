@@ -17,7 +17,7 @@ class VoitureSeeder extends Seeder
             Voiture::create([
                 'modele' => 'Clio',
                 'immatriculation' => 'AB-123-CD',
-                'energie' => 'Essence',
+                'energie' => 'Hybride',
                 'couleur' => 'Rouge',
                 'date_premiere_immatriculation' => now()->subYears(2)->toDateString(),
                 'utilisateur_id' => $utilisateur->id,
