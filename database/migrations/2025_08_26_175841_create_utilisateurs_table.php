@@ -24,6 +24,7 @@ return new class extends Migration
             $table->string('pseudo')->unique();
             $table->integer('credit')->default(0);
             $table->timestamps();
+            $table->engine = 'InnoDB';
         });
     }
 

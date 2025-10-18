@@ -20,6 +20,7 @@ return new class extends Migration
             $table->date('date_premiere_immatriculation');
             $table->foreignId('utilisateur_id')->constrained('utilisateurs')->onDelete('cascade');
             $table->timestamps();
+            $table->engine = 'InnoDB';
         });
     }
 
