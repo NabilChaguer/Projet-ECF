@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@section('title', 'EcoRide - Covoiturage')
+
 @section('content')
 
 <main class="flex-grow-1 d-flex justify-content-center bg-gradient-section h-100">
@@ -199,9 +201,15 @@
                                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
                                                 @if(Auth::check())
                                                     @if($covoiturage->nb_place > 0)
-                                                        <form action="{{ route('covoiturage.reserver', $covoiturage->covoiturage_id) }}" method="POST" class="m-0">
+                                                        <form id="reservation-form-{{ $covoiturage->id }}"
+                                                            data-prix="{{ $covoiturage->prix_personne }}"
+                                                            action="{{ route('covoiturage.reserver', $covoiturage->id) }}"
+                                                            method="POST"
+                                                            class="m-0">
                                                             @csrf
-                                                            <button type="submit" class="btn btn-success">Participer à ce covoiturage</button>
+                                                            <button type="submit" class="btn btn-success">
+                                                                Participer à ce covoiturage
+                                                            </button>
                                                         </form>
                                                     @else
                                                         <button class="btn btn-secondary" disabled>Aucune place disponible</button>
@@ -294,9 +302,15 @@
                                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
                                                     @if(Auth::check())
                                                         @if($covoiturage->nb_place > 0)
-                                                            <form action="{{ route('covoiturage.reserver', $covoiturage->covoiturage_id) }}" method="POST" class="m-0">
+                                                            <form id="reservation-form-{{ $covoiturage->id }}"
+                                                                data-prix="{{ $covoiturage->prix_personne }}"
+                                                                action="{{ route('covoiturage.reserver', $covoiturage->id) }}"
+                                                                method="POST"
+                                                                class="m-0">
                                                                 @csrf
-                                                                <button type="submit" class="btn btn-success">Participer à ce covoiturage</button>
+                                                                <button type="submit" class="btn btn-success">
+                                                                    Participer à ce covoiturage
+                                                                </button>
                                                             </form>
                                                         @else
                                                             <button class="btn btn-secondary" disabled>Aucune place disponible</button>

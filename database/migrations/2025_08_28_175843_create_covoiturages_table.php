@@ -24,6 +24,7 @@ return new class extends Migration
             $table->decimal('prix_personne', 8, 2);
             $table->string('statut', 50)->default('ouvert');
             $table->timestamps();
+            $table->engine = 'InnoDB';
         });
     }
 

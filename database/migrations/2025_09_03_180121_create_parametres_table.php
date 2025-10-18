@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('valeur');
             $table->foreignId('configuration_id')->constrained('configurations')->onDelete('cascade');
             $table->timestamps();
+            $table->engine = 'InnoDB';
         });
     }
 
