@@ -1,16 +1,14 @@
 <nav id="navbar" class="navbar navbar-expand-lg fixed-top py-3">
     <div class="container">
-        <!-- Logo -->
+
         <a class="navbar-brand fw-bold text-success" href="/">
             <i class="bi bi-flower1"></i> EcoRide
         </a>
 
-        <!-- Bouton menu mobile -->
         <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar">
             <span class="navbar-toggler-icon"></span>
         </button>
 
-        <!-- Menu -->
         <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar">
             <div class="offcanvas-header">
                 <h5 class="fw-bold text-success">Menu</h5>
@@ -19,7 +17,19 @@
 
             <div class="offcanvas-body">
                 <ul class="navbar-nav ms-auto align-items-lg-center">
-                    <li class="nav-item"><a class="nav-link text-dark" href="/">Accueil</a></li>
+
+                    @auth
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" href="{{ route('mon-espace') }}">
+                                <i class="bi bi-person-circle"></i> Mon espace
+                            </a>
+                        </li>
+                    @else
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" href="/">Accueil</a>
+                        </li>
+                    @endauth
+
                     <li class="nav-item"><a class="nav-link text-dark" href="/covoiturage">Covoiturage</a></li>
                     <li class="nav-item"><a class="nav-link text-dark" href="/contact">Contact</a></li>
 

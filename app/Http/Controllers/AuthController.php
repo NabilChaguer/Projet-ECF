@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
-
     public function afficherFormulaireLogin()
     {
         return view('login');
@@ -24,7 +23,8 @@ class AuthController extends Controller
 
         if (Auth::attempt(['email' => $request->email, 'password' => $request->mot_de_passe])) {
             $request->session()->regenerate();
-            return redirect()->intended('/')->with('success', 'Connexion réussie ✅');
+
+            return redirect()->route('mon-espace')->with('success', 'Connexion réussie ✅');
         }
 
         return back()->withErrors([
@@ -69,16 +69,17 @@ class AuthController extends Controller
             'date_naissance' => now(),
         ]);
 
-        return redirect()->route('login.formulaire')->with('success', 'Compte créé avec succès ! Vous bénéficiez de 20 crédits 🎉');
+        return redirect()->route('login.formulaire')
+                         ->with('success', 'Compte créé avec succès ! Vous bénéficiez de 20 crédits 🎉');
     }
 
-    // Déconnexion
     public function logout(Request $request)
     {
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('login.formulaire')->with('success', 'Vous êtes maintenant déconnecté 👋');
+        return redirect()->route('login.formulaire')
+                         ->with('success', 'Vous êtes maintenant déconnecté 👋');
     }
 }

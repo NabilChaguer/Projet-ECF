@@ -15,7 +15,7 @@
 
     @include('partials.header')
 
-    <main class="flex-grow-1">
+    <main class="flex-grow-1 bg-gradient-section">
         @yield('content')
     </main>
 
@@ -23,5 +23,6 @@
 
         <!-- JS -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="//unpkg.com/alpinejs" defer></script>
 </body>
 </html>

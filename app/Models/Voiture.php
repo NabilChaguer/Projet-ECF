@@ -7,12 +7,20 @@ use Illuminate\Database\Eloquent\Model;
 class Voiture extends Model
 {
     protected $fillable = [
+        'marque',
         'modele',
         'immatriculation',
         'energie',
         'couleur',
         'date_premiere_immatriculation',
         'utilisateur_id',
+        'preferences',
+        'places_disponibles',
+    ];
+
+    protected $casts = [
+        'preferences' => 'array',
+        'date_premiere_immatriculation' => 'date',
     ];
 
     public function utilisateur()

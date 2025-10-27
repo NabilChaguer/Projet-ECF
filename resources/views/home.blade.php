@@ -2,7 +2,7 @@
 
 @section('title', 'EcoRide - Accueil')
 
-@section('content')
+
 
     <!-- First section -->
     <section class="py-5 bg-gradient-section">
@@ -108,4 +108,3 @@
         </div>
     </section>
 
-@endsection
