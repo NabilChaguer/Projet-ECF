@@ -31,4 +31,21 @@ class Voiture extends Model
     {
         return $this->hasMany(Covoiturage::class, 'voiture_id');
     }
+
+        public function getEcologiqueAttribute(): bool
+    {
+        if (!$this->energie) {
+            return false;
+        }
+
+        $energie = strtolower($this->energie);
+
+        $energie = str_replace(
+            ['é','è','ê','É','È','Ê'],
+            'e',
+            $energie
+        );
+
+        return in_array($energie, ['hybride', 'electrique']);
+    }
 }

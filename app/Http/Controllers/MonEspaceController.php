@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Voiture;
+use App\Models\Covoiturage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -13,7 +14,12 @@ class MonEspaceController extends Controller
         $user = Auth::user();
         $voitures = Voiture::where('utilisateur_id', $user->id)->get();
 
-        return view('mon-espace', compact('user', 'voitures'));
+        $voyages = Covoiturage::where('utilisateur_id', $user->id)
+            ->with('voiture')
+            ->latest()
+            ->get();
+
+        return view('mon-espace', compact('user', 'voitures', 'voyages'));
     }
 
     public function update(Request $request)
@@ -78,5 +84,101 @@ class MonEspaceController extends Controller
 
         return redirect()->route('mon-espace')->with('success', 'Véhicule supprimé avec succès.');
     }
+
+    public function saisirVoyage()
+    {
+        $user = Auth::user();
+
+        $voitures = $user->voitures()->get();
+        $voyages = $user->covoiturages()->with('voiture')->latest()->get();
+
+        return view('saisir-voyage', compact('voitures', 'voyages'));
+    }
+
+
+    public function storeVoyage(Request $request)
+{
+    $user = Auth::user();
+
+    // --- Validation --}}
+    $validated = $request->validate([
+        'voiture_id' => 'nullable|exists:voitures,id',
+        'vehicule.0.marque' => 'nullable|string|max:255',
+        'vehicule.0.modele' => 'nullable|string|max:255',
+        'vehicule.0.immatriculation' => 'nullable|string|max:255',
+        'vehicule.0.couleur' => 'nullable|string|max:255',
+        'vehicule.0.energie' => 'nullable|string|max:50',
+        'vehicule.0.date_premiere_immatriculation' => 'nullable|date',
+        'vehicule.0.places_disponibles' => 'nullable|integer|min:1|max:9',
+
+        'lieu_depart' => 'required|string|max:255',
+        'lieu_arrivee' => 'required|string|max:255',
+        'date_depart' => 'required|date',
+        'heure_depart' => 'required',
+        'prix_personne' => 'nullable|numeric|min:0',
+    ]);
+
+    $prixFinal = max(0, ($request->prix_personne ?? 0) - 2);
+
+    $voitureId = null;
+    $nv = $request->input('vehicule')[0] ?? null;
+
+    if (!empty($nv['marque'])) {
+
+        // --- Création voiture avec préférences --}}
+        $voiture = Voiture::create([
+            'utilisateur_id' => $user->id,
+            'marque' => $nv['marque'],
+            'modele' => $nv['modele'] ?? null,
+            'immatriculation' => $nv['immatriculation'] ?? null,
+            'couleur' => $nv['couleur'] ?? null,
+            'energie' => $nv['energie'] ?? 'Non spécifiée',
+            'date_premiere_immatriculation' => $nv['date_premiere_immatriculation'] ?? null,
+            'places_disponibles' => (int)($nv['places_disponibles'] ?? 1),
+
+            'preferences' => [
+                'fumeur' => !empty($nv['preferences']['fumeur']),
+                'animal' => !empty($nv['preferences']['animal']),
+                'custom' => array_filter($nv['preferences']['custom'] ?? []),
+            ],
+        ]);
+
+        $voitureId = $voiture->id;
+
+    } elseif (!empty($validated['voiture_id'])) {
+
+        $voiture = Voiture::findOrFail($validated['voiture_id']);
+        $voitureId = $voiture->id;
+    }
+
+    if (!$voitureId) {
+        return back()
+            ->withErrors(['voiture_id' => 'Veuillez sélectionner ou créer un véhicule.'])
+            ->withInput();
+    }
+
+    // --- Détection écologique à partir de l’énergie --}}
+    $energie = strtolower(str_replace(['é','è','ê'], 'e', $voiture->energie));
+    $isEcologique = in_array($energie, ['hybride', 'electrique']) ? 1 : 0;
+
+    // --- Création du covoiturage --}}
+    Covoiturage::create([
+        'utilisateur_id' => $user->id,
+        'voiture_id' => $voitureId,
+        'lieu_depart' => $validated['lieu_depart'],
+        'lieu_arrivee' => $validated['lieu_arrivee'],
+        'date_depart' => $validated['date_depart'],
+        'heure_depart' => $validated['heure_depart'],
+        'date_arrivee' => $validated['date_depart'],
+        'heure_arrivee' => $validated['heure_depart'],
+        'prix_personne' => $prixFinal,
+        'nb_place' => $voiture->places_disponibles ?? 1,
+        'statut' => 'ouvert',
+        'ecologique' => $isEcologique,
+    ]);
+
+    return redirect()->route('mon-espace')
+        ->with('success', 'Voyage enregistré avec succès ✅');
 }
 
+}

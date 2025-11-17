@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Covoiturage extends Model
 {
     protected $fillable = [
+        'utilisateur_id',
         'voiture_id',
         'nb_place',
         'prix_personne',
@@ -17,6 +18,11 @@ class Covoiturage extends Model
         'date_arrivee',
         'heure_arrivee',
         'statut',
+        'ecologique',
+    ];
+
+    protected $casts = [
+        'ecologique' => 'boolean',
     ];
 
     public function voiture()

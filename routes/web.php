@@ -31,4 +31,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/mon-espace', [MonEspaceController::class, 'show'])->name('mon-espace');
     Route::post('/mon-espace/update', [MonEspaceController::class, 'update'])->name('mon-espace.update');
     Route::delete('/voitures/{voiture}', [MonEspaceController::class, 'destroy'])->name('voitures.destroy');
+
+// === Saisie d’un voyage (formulaire + enregistrement) ===
+Route::middleware(['auth'])->group(function () {
+    Route::get('/mon-espace/voyage/saisir', [MonEspaceController::class, 'saisirVoyage'])->name('voyages.create');
+    Route::post('/mon-espace/voyage', [MonEspaceController::class, 'storeVoyage'])->name('voyages.store');
+});
+
 });
