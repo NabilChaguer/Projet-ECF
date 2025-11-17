@@ -43,11 +43,46 @@ $roleInitial = in_array('chauffeur', $rolesUtilisateur) && in_array('passager', 
                 <small class="text-muted d-block mt-2">Sélectionnez un rôle pour afficher le(s) formulaire(s) correspondant(s).</small>
             </div>
 
+            {{------------ FORMULAIRE PASSAGER (recherche) ------------}}
+            <div x-show="roleSelectionne === 'passager' || roleSelectionne === 'les-deux'" x-transition class="mt-5">
+                <h5 class="fw-bold mb-3"><i class="bi bi-search"></i> Rechercher un covoiturage</h5>
+                <form id="formRecherche" action="{{ route('covoiturages.search') }}" method="POST" class="bg-white rounded-4 shadow p-4 p-md-5 mx-auto" style="max-width:1000px;">
+                    @csrf
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-3">
+                            <label class="form-label">Départ</label>
+                            <input type="text" name="departure" class="form-control" placeholder="Ville de départ" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Arrivée</label>
+                            <input type="text" name="arrival" class="form-control" placeholder="Ville d'arrivée" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Date</label>
+                            <input type="date" name="date" class="form-control" min="{{ date('Y-m-d') }}">
+                        </div>
+                        <div class="col-md-3">
+                            <button type="submit" class="btn w-100 text-white border-0 btn-color">
+                                <i class="bi bi-search me-1"></i> Rechercher
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
             {{------------ FORMULAIRE AJOUT VEHICULE ------------}}
             <form method="POST" action="{{ route('mon-espace.update') }}"
                   x-cloak x-show="roleSelectionne === 'chauffeur' || roleSelectionne === 'les-deux'" x-transition id="formAjouterVehicule">
                 @csrf
                 <input type="hidden" name="role" :value="roleSelectionne">
+
+            {{------------ BOUTON SAISIR UN VOYAGE ------------}}
+            <div class="mt-4" x-show="roleSelectionne === 'chauffeur' || roleSelectionne === 'les-deux'" x-transition>
+                <a href="{{ route('voyages.create') }}"
+                class="btn btn-primary px-4 py-2 shadow">
+                    <i class="bi bi-plus-circle"></i> Saisir un nouveau voyage
+                </a>
+            </div>
 
                 <div class="mt-3 bg-light border rounded-3 p-4 shadow-sm">
                     <h5 class="fw-bold mb-3"><i class="bi bi-car-front"></i> Ajouter un véhicule</h5>
@@ -76,6 +111,16 @@ $roleInitial = in_array('chauffeur', $rolesUtilisateur) && in_array('passager', 
                         <div class="col-md-3">
                             <label class="form-label">Places disponibles</label>
                             <input type="number" name="vehicule[0][places_disponibles]" class="form-control" min="1" max="7" value="1" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Énergie</label>
+                            <select name="vehicule[0][energie]" class="form-select">
+                                <option value="">--</option>
+                                <option value="Essence">Essence</option>
+                                <option value="Diesel">Diesel</option>
+                                <option value="Hybride">Hybride</option>
+                                <option value="Électrique">Électrique</option>
+                            </select>
                         </div>
                     </div>
 
@@ -118,6 +163,12 @@ $roleInitial = in_array('chauffeur', $rolesUtilisateur) && in_array('passager', 
                                     <p class="mb-1"><strong>Date première immatriculation :</strong> {{ Carbon::parse($voiture->date_premiere_immatriculation)->format('d/m/Y') }}</p>
                                     <p class="mb-1"><strong>Couleur :</strong> {{ $voiture->couleur ?? '—' }}</p>
                                     <p class="mb-1"><strong>Places disponibles :</strong> {{ $voiture->places_disponibles ?? 1 }}</p>
+                                    
+                                    @if($voiture->ecologique)
+                                        <p><strong>Écologique :</strong> Oui 🌱</p>
+                                    @else
+                                        <p><strong>Écologique :</strong> Non 🚗</p>
+                                    @endif
 
                                     @if(!empty($voiture->preferences))
                                         <div class="mt-3 p-2 bg-light border rounded">
@@ -161,37 +212,33 @@ $roleInitial = in_array('chauffeur', $rolesUtilisateur) && in_array('passager', 
                 </div>
             @endif
 
-            {{------------ FORMULAIRE PASSAGER (recherche) ------------}}
-            <div x-show="roleSelectionne === 'passager' || roleSelectionne === 'les-deux'" x-transition class="mt-5">
-                <h5 class="fw-bold mb-3"><i class="bi bi-search"></i> Rechercher un covoiturage</h5>
-                <form id="formRecherche" action="{{ route('covoiturages.search') }}" method="POST" class="bg-white rounded-4 shadow p-4 p-md-5 mx-auto" style="max-width:1000px;">
-                    @csrf
-                    <div class="row g-3 align-items-end">
-                        <div class="col-md-3">
-                            <label class="form-label">Départ</label>
-                            <input type="text" name="departure" class="form-control" placeholder="Ville de départ" required>
+            {{------------ VOS VOYAGES ENREGISTRÉS ------------}}
+            @if($voyages->count())
+                <hr class="my-4">
+                <h5 class="fw-bold mb-3"><i class="bi bi-geo-fill"></i> Vos voyages enregistrés</h5>
+
+                <div class="list-group">
+                    @foreach($voyages as $v)
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ $v->lieu_depart }} → {{ $v->lieu_arrivee }}</strong><br>
+                                Date : {{ \Carbon\Carbon::parse($v->date_depart)->format('d/m/Y') }} {{ $v->heure_depart ?? '' }} <br>
+                                Véhicule :
+                                {{ $v->voiture->marque ?? '—' }}
+                                {{ $v->voiture->modele ?? '' }}
+                                ({{ $v->voiture->immatriculation ?? '' }})
+                            </div>
+
+                            <span class="fw-bold">{{ $v->prix_personne }} crédits / {{ $v->nb_place }} places</span>
                         </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Arrivée</label>
-                            <input type="text" name="arrival" class="form-control" placeholder="Ville d'arrivée" required>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Date</label>
-                            <input type="date" name="date" class="form-control" min="{{ date('Y-m-d') }}">
-                        </div>
-                        <div class="col-md-3">
-                            <button type="submit" class="btn w-100 text-white border-0 btn-color">
-                                <i class="bi bi-search me-1"></i> Rechercher
-                            </button>
-                        </div>
-                    </div>
-                </form>
-            </div>
+                    @endforeach
+                </div>
+            @endif
         </div>
     </div>
 </div>
 
-{{-- ========================= MODALE DE CONFIRMATION SUPPRESSION ========================= --}}
+{{------------ MODALE DE CONFIRMATION SUPPRESSION ------------}}
 <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg rounded-3">
@@ -201,7 +248,8 @@ $roleInitial = in_array('chauffeur', $rolesUtilisateur) && in_array('passager', 
             </div>
             <div class="modal-body">
                 <p>Voulez-vous vraiment supprimer ce véhicule ?</p>
-                <p class="text-danger mt-2"><small>Cette action est irréversible.</small></p>
+                <p class="text-danger mt-2"><small>Cette action est irréversible. Tout ce qui est lié à ce véhicule sera également supprimé
+                    (trajets, historiques, données associées, etc.).</small></p>
             </div>
             <div class="modal-footer">
                 <form id="deleteForm" method="POST" action="">
