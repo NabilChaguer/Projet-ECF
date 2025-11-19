@@ -32,6 +32,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/mon-espace/update', [MonEspaceController::class, 'update'])->name('mon-espace.update');
     Route::delete('/voitures/{voiture}', [MonEspaceController::class, 'destroy'])->name('voitures.destroy');
 
+    // Historique / annulation de covoiturages
+    Route::get('/mon-espace/historique', [MonEspaceController::class, 'historique'])->name('mon-espace.historique');
+    Route::post('/covoiturages/{covoiturage}/annuler',[ReservationController::class, 'annuler'])->name('covoiturage.annuler');
+    Route::delete('/mes-reservations/{covoiturage}/annuler', [MonEspaceController::class, 'annuler'])->name('mon-espace.reservation.annuler')->middleware('auth');
+    Route::delete('/covoiturage/supprimer-definitif/{id}',[MonEspaceController::class, 'supprimerDefinitif'])->name('covoiturage.supprimer.definitif');
+
 // === Saisie d’un voyage (formulaire + enregistrement) ===
 Route::middleware(['auth'])->group(function () {
     Route::get('/mon-espace/voyage/saisir', [MonEspaceController::class, 'saisirVoyage'])->name('voyages.create');

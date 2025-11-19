@@ -6,8 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Marque extends Model
 {
-    protected $table = 'marques'; // Nom exact de la table
-    protected $primaryKey = 'marque_id'; // Clé primaire personnalisée
+    protected $table = 'marques';
+    protected $primaryKey = 'marque_id';
     public $timestamps = true;
 
     protected $fillable = [

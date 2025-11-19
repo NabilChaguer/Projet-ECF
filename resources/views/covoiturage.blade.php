@@ -155,11 +155,10 @@
                                 </div>
 
                                 <div class="flex-grow-1 text-start">
-                                    <div><strong>Départ&nbsp;:</strong> {{ $covoiturage->lieu_depart }} - {{ \Carbon\Carbon::parse($covoiturage->date_depart)->format('d/m/Y H:i') }}</div>
-                                    <div><strong>Arrivée&nbsp;:</strong> {{ $covoiturage->lieu_arrivee }} - {{ \Carbon\Carbon::parse($covoiturage->date_arrivee)->format('d/m/Y H:i') }}</div>
-                                    <div class="small mt-1 {{ $covoiturage->ecologique ? 'text-green' : 'text-muted' }}">
-                                        {{ $covoiturage->ecologique ? 'Voyage écologique 🌱' : 'Classique 🚗' }}
-                                    </div>
+                                    <div><strong>Départ&nbsp;:</strong> {{ $covoiturage->lieu_depart }} - {{ $covoiturage->date_depart->format('d/m/Y') }} {{ $covoiturage->heure_depart }}</div>
+                                    <div><strong>Arrivée&nbsp;:</strong> {{ $covoiturage->lieu_arrivee }} - {{ \Carbon\Carbon::parse($covoiturage->date_arrivee)->format('d/m/Y') }}</div>
+                                    <div class="small mt-1 {{ $covoiturage->voiture->ecologique ? 'text-green' : 'text-muted' }}">
+                                    {{ $covoiturage->voiture->ecologique ? 'Voyage écologique 🌱' : 'Classique 🚗' }}</div>
                                 </div>
 
                                 <!-- Bouton Détails -->
@@ -178,8 +177,8 @@
                                                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
                                             </div>
                                             <div class="modal-body">
-                                                <p><strong>Départ :</strong> {{ $covoiturage->lieu_depart }} - {{ \Carbon\Carbon::parse($covoiturage->date_depart)->format('d/m/Y H:i') }}</p>
-                                                <p><strong>Arrivée :</strong> {{ $covoiturage->lieu_arrivee }} - {{ \Carbon\Carbon::parse($covoiturage->date_arrivee)->format('d/m/Y H:i') }}</p>
+                                                <p><strong>Départ :</strong> {{ $covoiturage->lieu_depart }} - {{ $covoiturage->date_depart->format('d/m/Y') }} {{ $covoiturage->heure_depart }}</p>
+                                                <p><strong>Arrivée :</strong> {{ $covoiturage->lieu_arrivee }} - {{ \Carbon\Carbon::parse($covoiturage->date_arrivee)->format('d/m/Y') }}</p>
                                                 <p><strong>Prix :</strong> {{ $covoiturage->prix_personne }} € / personne</p>
                                                 <p><strong>Places restantes :</strong> {{ $covoiturage->nb_place }}</p>
                                                 <p><strong>Conducteur :</strong> {{ optional($covoiturage->voiture->utilisateur)->pseudo ?? 'N/A' }}</p>
@@ -193,9 +192,35 @@
                                                 @else
                                                     <p><em>Aucun avis pour ce conducteur.</em></p>
                                                 @endif
-                                                <p><strong>Type :</strong> {{ $covoiturage->ecologique ? 'Voyage écologique 🌱' : 'Classique 🚗' }}</p>
+                                                <p><strong>Type :</strong> {{ $covoiturage->voiture->ecologique ? 'Voyage écologique 🌱' : 'Classique 🚗' }}</p>
                                                 <p><strong>Véhicule :</strong> {{ $covoiturage->voiture->marque ?? 'N/A' }} {{ $covoiturage->voiture->modele ?? '' }} ({{ $covoiturage->voiture->energie ?? 'inconnu' }})</p>
-                                                <p><strong>Préférences conducteur :</strong> {{ $covoiturage->voiture->utilisateur->preferences ?? 'Non renseignées' }}</p>
+                                                @if(!empty($covoiturage->voiture->preferences))
+                                                    <div class="mt-2 p-2 bg-light border rounded">
+                                                            <h6 class="fw-bold mb-1"><i class="bi bi-stars"></i> Préférences conducteur :</h6>
+                                                            <ul class="list-unstyled mb-0">
+                                                                <li>
+                                                                    <i class="bi {{ ($covoiturage->voiture->preferences['fumeur'] ?? false) ? 'bi-check-circle text-success' : 'bi-x-circle text-danger' }}"></i>
+                                                                    <strong>Fumeur :</strong> {{ ($covoiturage->voiture->preferences['fumeur'] ?? false) ? 'Oui' : 'Non' }}
+                                                                </li>
+                                                                <li>
+                                                                    <i class="bi {{ ($covoiturage->voiture->preferences['animal'] ?? false) ? 'bi-check-circle text-success' : 'bi-x-circle text-danger' }}"></i>
+                                                                    <strong>Animaux :</strong> {{ ($covoiturage->voiture->preferences['animal'] ?? false) ? 'Acceptés' : 'Non acceptés' }}
+                                                                </li>
+                                                                @if(!empty($covoiturage->voiture->preferences['custom']))
+                                                                    <li class="mt-1">
+                                                                        <strong>Autres préférences :</strong>
+                                                                        <ul class="mb-0">
+                                                                            @foreach($covoiturage->voiture->preferences['custom'] as $pref)
+                                                                                <li>{{ $pref }}</li>
+                                                                            @endforeach
+                                                                        </ul>
+                                                                    </li>
+                                                                @endif
+                                                            </ul>
+                                                        </div>
+                                                    @else
+                                                        <p><strong>Préférences conducteur :</strong> Non renseignées</p>
+                                                    @endif
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
@@ -256,11 +281,10 @@
                                 </div>
 
                                 <div class="flex-grow-1 text-start">
-                                    <div><strong>Départ&nbsp;:</strong> {{ $covoiturage->lieu_depart }} - {{ \Carbon\Carbon::parse($covoiturage->date_depart)->format('d/m/Y H:i') }}</div>
-                                    <div><strong>Arrivée&nbsp;:</strong> {{ $covoiturage->lieu_arrivee }} - {{ \Carbon\Carbon::parse($covoiturage->date_arrivee)->format('d/m/Y H:i') }}</div>
-                                    <div class="small mt-1 {{ $covoiturage->ecologique ? 'text-green' : 'text-muted' }}">
-                                        {{ $covoiturage->ecologique ? 'Voyage écologique 🌱' : 'Classique 🚗' }}
-                                    </div>
+                                    <div><strong>Départ&nbsp;:</strong> {{ $covoiturage->lieu_depart }} - {{ $covoiturage->date_depart->format('d/m/Y') }} {{ $covoiturage->heure_depart }}</div>
+                                    <div><strong>Arrivée&nbsp;:</strong> {{ $covoiturage->lieu_arrivee }} - {{ \Carbon\Carbon::parse($covoiturage->date_arrivee)->format('d/m/Y') }}</div>
+                                    <div class="small mt-1 {{ $covoiturage->voiture->ecologique ? 'text-green' : 'text-muted' }}">
+                                    {{ $covoiturage->voiture->ecologique ? 'Voyage écologique 🌱' : 'Classique 🚗' }}</div>
                                 </div>
 
                                 <!-- Bouton Détails -->
@@ -279,8 +303,8 @@
                                                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
                                             </div>
                                             <div class="modal-body">
-                                                <p><strong>Départ :</strong> {{ $covoiturage->lieu_depart }} - {{ \Carbon\Carbon::parse($covoiturage->date_depart)->format('d/m/Y H:i') }}</p>
-                                                <p><strong>Arrivée :</strong> {{ $covoiturage->lieu_arrivee }} - {{ \Carbon\Carbon::parse($covoiturage->date_arrivee)->format('d/m/Y H:i') }}</p>
+                                                <p><strong>Départ :</strong> {{ $covoiturage->lieu_depart }} - {{ $covoiturage->date_depart->format('d/m/Y') }} {{ $covoiturage->heure_depart }}</p>
+                                                <p><strong>Arrivée :</strong> {{ $covoiturage->lieu_arrivee }} - {{ \Carbon\Carbon::parse($covoiturage->date_arrivee)->format('d/m/Y') }}</p>
                                                 <p><strong>Prix :</strong> {{ $covoiturage->prix_personne }} € / personne</p>
                                                 <p><strong>Places restantes :</strong> {{ $covoiturage->nb_place }}</p>
                                                 <p><strong>Conducteur :</strong> {{ optional($covoiturage->voiture->utilisateur)->pseudo ?? 'N/A' }}</p>
@@ -294,9 +318,35 @@
                                                 @else
                                                     <p><em>Aucun avis pour ce conducteur.</em></p>
                                                 @endif
-                                                <p><strong>Type :</strong> {{ $covoiturage->ecologique ? 'Voyage écologique 🌱' : 'Classique 🚗' }}</p>
+                                                <p><strong>Type :</strong> {{ $covoiturage->voiture->ecologique ? 'Voyage écologique 🌱' : 'Classique 🚗' }}</p>
                                                 <p><strong>Véhicule :</strong> {{ $covoiturage->voiture->marque ?? 'N/A' }} {{ $covoiturage->voiture->modele ?? '' }} ({{ $covoiturage->voiture->energie ?? 'inconnu' }})</p>
-                                                <p><strong>Préférences conducteur :</strong> {{ $covoiturage->voiture->utilisateur->preferences ?? 'Non renseignées' }}</p>
+                                                @if(!empty($covoiturage->voiture->preferences))
+                                                    <div class="mt-2 p-2 bg-light border rounded">
+                                                            <h6 class="fw-bold mb-1"><i class="bi bi-stars"></i> Préférences conducteur :</h6>
+                                                            <ul class="list-unstyled mb-0">
+                                                                <li>
+                                                                    <i class="bi {{ ($covoiturage->voiture->preferences['fumeur'] ?? false) ? 'bi-check-circle text-success' : 'bi-x-circle text-danger' }}"></i>
+                                                                    <strong>Fumeur :</strong> {{ ($covoiturage->voiture->preferences['fumeur'] ?? false) ? 'Oui' : 'Non' }}
+                                                                </li>
+                                                                <li>
+                                                                    <i class="bi {{ ($covoiturage->voiture->preferences['animal'] ?? false) ? 'bi-check-circle text-success' : 'bi-x-circle text-danger' }}"></i>
+                                                                    <strong>Animaux :</strong> {{ ($covoiturage->voiture->preferences['animal'] ?? false) ? 'Acceptés' : 'Non acceptés' }}
+                                                                </li>
+                                                                @if(!empty($covoiturage->voiture->preferences['custom']))
+                                                                    <li class="mt-1">
+                                                                        <strong>Autres préférences :</strong>
+                                                                        <ul class="mb-0">
+                                                                            @foreach($covoiturage->voiture->preferences['custom'] as $pref)
+                                                                                <li>{{ $pref }}</li>
+                                                                            @endforeach
+                                                                        </ul>
+                                                                    </li>
+                                                                @endif
+                                                            </ul>
+                                                        </div>
+                                                    @else
+                                                        <p><strong>Préférences conducteur :</strong> Non renseignées</p>
+                                                    @endif
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>

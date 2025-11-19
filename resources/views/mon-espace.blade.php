@@ -212,27 +212,234 @@ $roleInitial = in_array('chauffeur', $rolesUtilisateur) && in_array('passager', 
                 </div>
             @endif
 
-            {{------------ VOS VOYAGES ENREGISTRÉS ------------}}
-            @if($voyages->count())
-                <hr class="my-4">
-                <h5 class="fw-bold mb-3"><i class="bi bi-geo-fill"></i> Vos voyages enregistrés</h5>
+            {{-- VOS VOYAGES (CHAUFFEUR) --}}
 
-                <div class="list-group">
-                    @foreach($voyages as $v)
+            <h4 class="mt-5 mb-3">Vos trajets en tant que chauffeur</h4>
+
+            {{-- === Trajets actifs === --}}
+            @if($voyagesChauffeurActifs->count())
+                <div class="list-group mb-4">
+                    @foreach($voyagesChauffeurActifs as $v)
                         <div class="list-group-item d-flex justify-content-between align-items-center">
+
+                            {{-- Infos trajet --}}
                             <div>
                                 <strong>{{ $v->lieu_depart }} → {{ $v->lieu_arrivee }}</strong><br>
-                                Date : {{ \Carbon\Carbon::parse($v->date_depart)->format('d/m/Y') }} {{ $v->heure_depart ?? '' }} <br>
-                                Véhicule :
-                                {{ $v->voiture->marque ?? '—' }}
-                                {{ $v->voiture->modele ?? '' }}
-                                ({{ $v->voiture->immatriculation ?? '' }})
+                                Date : {{ $v->date_depart->format('d/m/Y') }} {{ $v->heure_depart }} <br>
+                                Véhicule : {{ $v->voiture->marque }} {{ $v->voiture->modele }} ({{ $v->voiture->immatriculation }})
                             </div>
 
+                        {{-- Droite --}}
+                        <div class="d-flex flex-column align-items-end">
                             <span class="fw-bold">{{ $v->prix_personne }} crédits / {{ $v->nb_place }} places</span>
+
+                        {{-- Bouton annuler chauffeur --}}
+                            @if($v->peutAnnuler())
+                                <button type="button" class="btn btn-danger btn-sm mt-2"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#confirmCancelModal-{{ $v->id }}">
+                                    <i class="bi bi-x-circle"></i> Annuler
+                                </button>
+
+                                {{-- Modal de confirmation --}}
+                                <div class="modal fade" id="confirmCancelModal-{{ $v->id }}" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content border-0 shadow-lg rounded-3">
+                                            <div class="modal-header bg-danger text-white">
+                                                <h5 class="modal-title">Confirmation</h5>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p>Voulez-vous vraiment annuler ce trajet ? Les participants seront remboursés.</p>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <form action="{{ route('covoiturage.annuler', $v->id) }}" method="POST">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-danger">Oui, annuler</button>
+                                                </form>
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Non</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        @else
+            <p class="text-muted">Aucun trajet actif en tant que chauffeur.</p>
+        @endif
+
+        {{-- === Trajets annulés (chauffeur) === --}}
+        <h5 class="mt-4">Trajets annulés (chauffeur)</h5>
+
+        @if($voyagesChauffeurAnnules->count())
+            <div class="list-group mb-4">
+                @foreach($voyagesChauffeurAnnules as $v)
+                    <div class="list-group-item bg-light">
+
+                        <strong>{{ $v->lieu_depart }} → {{ $v->lieu_arrivee }}</strong><br>
+
+                        <p class="mb-1">
+                            {{ $v->date_depart->format('d/m/Y') }} {{ $v->heure_depart }} <br>
+                            {{ $v->voiture->marque }} {{ $v->voiture->modele }} <br>
+                            {{ $v->voiture->immatriculation }}
+                        </p>
+
+                        <small class="text-danger">Statut : annulé</small>
+
+                        {{-- Suppression définitive --}}
+                        <form action="{{ route('covoiturage.supprimer.definitif', $v->id) }}" method="POST" class="mt-2">
+                            @csrf
+                            @method('DELETE')
+                            <button type="button" class="btn btn-danger btn-sm mt-2"
+                                data-bs-toggle="modal"
+                                data-bs-target="#confirmDeleteModal-{{ $v->id }}">
+                                <i class="bi bi-trash"></i> Supprimer définitivement
+                            </button>
+                            <div class="modal fade" id="confirmDeleteModal-{{ $v->id }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content border-0 shadow-lg rounded-3">
+                                        <div class="modal-header bg-danger text-white">
+                                            <h5 class="modal-title">Confirmation</h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p>Voulez-vous vraiment supprimer ce trajet définitivement ? Cette action est irréversible.</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <form action="{{ route('covoiturage.supprimer.definitif', $v->id) }}" method="POST">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-danger">Supprimer</button>
+                                            </form>
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                @endforeach
+            </div>
+        @else
+            <p class="text-muted">Aucun trajet annulé.</p>
+        @endif
+
+        {{-- VOS RÉSERVATIONS (PASSAGER) --}}
+
+        <h4 class="mt-5 mb-3"> Vos trajets en tant que passager</h4>
+
+        {{-- === Réservations actives === --}}
+        @if($voyagesPassagerActifs->count())
+            <div class="list-group mb-4">
+                @foreach($voyagesPassagerActifs as $v)
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+
+                        {{-- Infos trajet --}}
+                        <div>
+                            <strong>{{ $v->lieu_depart }} → {{ $v->lieu_arrivee }}</strong><br>
+                            Date : {{ $v->date_depart->format('d/m/Y') }} {{ $v->heure_depart }} <br>
+                            Chauffeur : {{ $v->chauffeur->pseudo }}
+                        </div>
+
+                        {{-- Droite --}}
+                        <div class="d-flex flex-column align-items-end">
+                            <span class="fw-bold">{{ $v->prix_personne }} crédits</span>
+
+                            {{-- Annulation passager possible --}}
+                            @if($v->peutAnnuler())
+                                <button type="button" class="btn btn-warning btn-sm mt-2"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#confirmCancelModalPassager-{{ $v->id }}">
+                                    <i class="bi bi-x-circle"></i> Annuler réservation
+                                </button>
+
+                                {{-- Modal de confirmation --}}
+                                <div class="modal fade" id="confirmCancelModalPassager-{{ $v->id }}" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content border-0 shadow-lg rounded-3">
+                                            <div class="modal-header bg-warning text-dark">
+                                                <h5 class="modal-title">Confirmation</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p>Voulez-vous vraiment annuler cette réservation ? Les crédits seront remboursés.</p>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <form action="{{ route('covoiturage.annuler', $v->id) }}" method="POST">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-warning">Oui, annuler</button>
+                                                </form>
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Non</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        @else
+            <p class="text-muted">Aucun trajet actif en tant que passager.</p>
+        @endif
+
+            {{-- Trajets annulés (passager) --}}
+            <h5 class="mt-4">Trajets annulés (passager)</h5>
+
+            @if($voyagesPassagerAnnules->count())
+                <div class="list-group mb-4">
+                    @foreach($voyagesPassagerAnnules as $v)
+                        <div class="list-group-item bg-light">
+
+                            <strong>{{ $v->lieu_depart }} → {{ $v->lieu_arrivee }}</strong><br>
+
+                            <p class="mb-1">
+                                {{ $v->date_depart->format('d/m/Y') }} {{ $v->heure_depart }} <br>
+                                {{ $v->voiture->marque }} {{ $v->voiture->modele }} <br>
+                                {{ $v->voiture->immatriculation }}
+                            </p>
+
+                            <small class="text-danger">Statut : annulé</small>
+
+                            {{-- Suppression définitive --}}
+                            <form action="{{ route('covoiturage.supprimer.definitif', $v->id) }}" method="POST" class="mt-2">
+                                @csrf
+                                @method('DELETE')
+                                <button type="button" class="btn btn-danger btn-sm mt-2"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#confirmDeleteModal-{{ $v->id }}">
+                                <i class="bi bi-trash"></i> Supprimer définitivement
+                            </button>
+                                <div class="modal fade" id="confirmDeleteModal-{{ $v->id }}" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content border-0 shadow-lg rounded-3">
+                                            <div class="modal-header bg-danger text-white">
+                                                <h5 class="modal-title">Confirmation</h5>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p>Voulez-vous vraiment supprimer ce trajet définitivement ? Cette action est irréversible.</p>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <form action="{{ route('covoiturage.supprimer.definitif', $v->id) }}" method="POST">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                                                </form>
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
                         </div>
                     @endforeach
                 </div>
+            @else
+                <p class="text-muted">Aucun trajet annulé.</p>
             @endif
         </div>
     </div>
