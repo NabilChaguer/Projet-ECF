@@ -1,52 +1,28 @@
-@extends('layouts.app')
-
-@section('title', 'EcoRide - Connexion')
-
-@section('content')
-
-<main class="d-flex justify-content-center align-items-center bg-gradient-section h-100">
-    <div class="card shadow-lg p-4" style="width: 400px;">
-        <h3 class="text-center text-success mb-4">Connexion à Ecoride</h3>
-
-        @if ($errors->any())
-            <div class="alert alert-danger">
-                <ul class="mb-0">
-                    @foreach ($errors->all() as $erreur)
-                        <li>{{ $erreur }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
-        @if (session('success'))
-            <div class="alert alert-success text-center">
-                {{ session('success') }}
-            </div>
-        @endif
-
-        <form action="{{ route('login') }}" method="POST">
-            @csrf
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - EcoRide</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light d-flex align-items-center justify-content-center vh-100">
+    <div class="card shadow-sm p-4" style="width: 360px;">
+        <h3 class="text-center mb-3">Connexion</h3>
+        <form action="#" method="POST">
             <div class="mb-3">
-                <label for="email" class="form-label">Adresse e-mail</label>
-                <input type="email" id="email" name="email" value="{{ old('email') }}" class="form-control" placeholder="exemple@ecoride.fr" required>
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" placeholder="exemple@mail.com">
             </div>
-
             <div class="mb-3">
-                <label for="mot_de_passe" class="form-label">Mot de passe</label>
-                <input type="password" id="mot_de_passe" name="mot_de_passe" class="form-control" placeholder="••••••••" required>
+                <label for="password" class="form-label">Mot de passe</label>
+                <input type="password" class="form-control" id="password" placeholder="********">
             </div>
-
-            <div class="d-grid">
-                <button type="submit" class="btn btn-color">Se connecter</button>
-            </div>
+            <button type="submit" class="btn btn-dark w-100">Se connecter</button>
         </form>
-
-        <hr class="my-4">
-        <p class="text-center mb-0">
-            Pas encore de compte ?
-            <a href="{{ route('register.formulaire') }}" class="text-success fw-bold">Créer un compte</a>
+        <p class="text-center mt-3 mb-0">
+            <a href="#" class="text-decoration-none">Créer un compte</a>
         </p>
     </div>
-</main>
-@endsection
-
+</body>
+</html>

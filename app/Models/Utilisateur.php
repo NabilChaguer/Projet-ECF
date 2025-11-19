@@ -44,11 +44,6 @@ class Utilisateur extends Authenticatable
         return $this->belongsToMany(Role::class, 'role_utilisateur', 'utilisateur_id', 'role_id');
     }
 
-    public function hasRole($roleLibelle)
-    {
-        return $this->roles()->where('libelle', $roleLibelle)->exists();
-    }
-
     public function reservations()
     {
         return $this->hasMany(Reservation::class, 'utilisateur_id');

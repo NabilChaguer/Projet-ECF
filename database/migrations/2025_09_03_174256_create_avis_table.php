@@ -21,7 +21,6 @@ return new class extends Migration
             $table->timestamps();
             $table->foreign('utilisateur_id')->references('id')->on('utilisateurs')->onDelete('cascade');
             $table->foreign('covoiturage_id')->references('id')->on('covoiturages')->onDelete('cascade');
-            $table->engine = 'InnoDB';
         });
     }
 

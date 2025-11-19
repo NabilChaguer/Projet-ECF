@@ -2,10 +2,11 @@
 
 namespace Database\Seeders;
 
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Covoiturage;
 use App\Models\Voiture;
-use App\Models\Utilisateur; // ✅ Import du modèle User
+use App\Models\Utilisateur;
 use Carbon\Carbon;
 
 class CovoiturageSeeder extends Seeder
@@ -15,18 +16,11 @@ class CovoiturageSeeder extends Seeder
      */
     public function run(): void
     {
-        // ✅ On récupère ou on crée un utilisateur
-        $user = Utilisateur::first() ?? Utilisateur::factory()->create();
+        $voiture = Voiture::first();
 
-        // ✅ On récupère ou on crée une voiture liée à cet utilisateur
-        $voiture = Voiture::first() ?? Voiture::factory()->create([
-            'utilisateur_id' => $user->id,
-        ]);
 
-        // ✅ Premier covoiturage
         Covoiturage::create([
-            'utilisateur_id' => $user->id,
-            'voiture_id'     => $voiture->id,
+            'voiture_id'    => $voiture->id,
             'nb_place'       => 3,
             'prix_personne'  => 15.00,
             'lieu_depart'    => 'Rennes',
@@ -39,10 +33,8 @@ class CovoiturageSeeder extends Seeder
             'ecologique'     => true,
         ]);
 
-        // ✅ Deuxième covoiturage
         Covoiturage::create([
-            'utilisateur_id' => $user->id,
-            'voiture_id'     => $voiture->id,
+            'voiture_id'    => $voiture->id,
             'nb_place'       => 2,
             'prix_personne'  => 20.00,
             'lieu_depart'    => 'Paris',
@@ -55,10 +47,8 @@ class CovoiturageSeeder extends Seeder
             'ecologique'     => false,
         ]);
 
-        // ✅ Troisième covoiturage
         Covoiturage::create([
-            'utilisateur_id' => $user->id,
-            'voiture_id'     => $voiture->id,
+            'voiture_id'    => $voiture->id,
             'nb_place'       => 1,
             'prix_personne'  => 10.00,
             'lieu_depart'    => 'Marseille',
@@ -72,5 +62,3 @@ class CovoiturageSeeder extends Seeder
         ]);
     }
 }
-
-

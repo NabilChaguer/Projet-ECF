@@ -42,7 +42,6 @@ class CovoiturageController extends Controller
 
         $baseQuery = Covoiturage::query()
             ->where('nb_place', '>', 0)
-            ->where('utilisateur_id', '!=', auth()->id())
             ->whereRaw('LOWER(lieu_depart) LIKE ?', ['%' . mb_strtolower($request->departure) . '%'])
             ->whereRaw('LOWER(lieu_arrivee) LIKE ?', ['%' . mb_strtolower($request->arrival) . '%']);
 
