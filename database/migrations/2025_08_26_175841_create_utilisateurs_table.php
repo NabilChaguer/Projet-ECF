@@ -23,7 +23,12 @@ return new class extends Migration
             $table->string('photo')->nullable();
             $table->string('pseudo')->unique();
             $table->integer('credit')->default(0);
+            $table->boolean('est_chauffeur')->default(false);
+            $table->boolean('est_passager')->default(false);
             $table->timestamps();
+            $table->engine = 'InnoDB';
+
+            $table->foreignId('role_id')->nullable()->constrained('roles')->onDelete('set null');
         });
     }
 

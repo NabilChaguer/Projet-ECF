@@ -1,6 +1,7 @@
 import './bootstrap';
 import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
+import './reservation-confirm';
 
 window.addEventListener('scroll', function() {
     const navbar = document.getElementById('navbar');

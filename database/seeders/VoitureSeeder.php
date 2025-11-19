@@ -16,6 +16,7 @@ class VoitureSeeder extends Seeder
 
             Voiture::create([
                 'modele' => 'Clio',
+                'marque' => 'Renault',
                 'immatriculation' => 'AB-123-CD',
                 'energie' => 'Hybride',
                 'couleur' => 'Rouge',

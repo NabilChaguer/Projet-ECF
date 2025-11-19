@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('covoiturages', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('utilisateur_id')->constrained('utilisateurs')->onDelete('cascade');
             $table->foreignId('voiture_id')->constrained('voitures')->onDelete('cascade');
             $table->date('date_depart');
             $table->time('heure_depart');
@@ -24,6 +25,7 @@ return new class extends Migration
             $table->decimal('prix_personne', 8, 2);
             $table->string('statut', 50)->default('ouvert');
             $table->timestamps();
+            $table->engine = 'InnoDB';
         });
     }
 
@@ -35,3 +37,4 @@ return new class extends Migration
         Schema::dropIfExists('covoiturages');
     }
 };
+

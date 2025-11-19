@@ -11,24 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('voitures', function (Blueprint $table) {
+        Schema::create('role_utilisateur', function (Blueprint $table) {
             $table->id();
-            $table->string('modele');
-            $table->string('immatriculation')->unique();
-            $table->string('energie');
-            $table->string('couleur')->nullable();
-            $table->date('date_premiere_immatriculation');
             $table->foreignId('utilisateur_id')->constrained('utilisateurs')->onDelete('cascade');
+            $table->foreignId('role_id')->constrained('roles')->onDelete('cascade');
             $table->timestamps();
-            $table->engine = 'InnoDB';
         });
     }
+
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('voitures');
+        Schema::dropIfExists('role_utilisateur');
     }
 };
