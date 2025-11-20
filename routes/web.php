@@ -44,4 +44,18 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/mon-espace/voyage', [MonEspaceController::class, 'storeVoyage'])->name('voyages.store');
 });
 
+// --- Chauffeur démarre le covoiturage ---
+Route::post('/covoiturage/{id}/demarrer', [ReservationController::class, 'demarrerCovoiturage'])
+    ->middleware('auth')
+    ->name('covoiturage.demarrer');
+
+// --- Chauffeur termine le covoiturage ---
+Route::post('/covoiturage/{id}/arrivee', [ReservationController::class, 'cloreCovoiturage'])
+    ->middleware('auth')
+    ->name('covoiturage.arrivee');
+
+Route::post('/reservation/{id}/valider-passager', [ReservationController::class, 'validerPassager'])
+    ->name('reservation.validerPassager')
+    ->middleware('auth');
+
 });

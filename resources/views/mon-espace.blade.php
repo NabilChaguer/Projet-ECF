@@ -222,26 +222,45 @@ $roleInitial = in_array('chauffeur', $rolesUtilisateur) && in_array('passager', 
                     @foreach($voyagesChauffeurActifs as $v)
                         <div class="list-group-item d-flex justify-content-between align-items-center">
 
-                            {{-- Infos trajet --}}
-                            <div>
-                                <strong>{{ $v->lieu_depart }} → {{ $v->lieu_arrivee }}</strong><br>
-                                Date : {{ $v->date_depart->format('d/m/Y') }} {{ $v->heure_depart }} <br>
-                                Véhicule : {{ $v->voiture->marque }} {{ $v->voiture->modele }} ({{ $v->voiture->immatriculation }})
-                            </div>
+                        {{-- Infos trajet --}}
+                        <div>
+                            <strong>{{ $v->lieu_depart }} → {{ $v->lieu_arrivee }}</strong><br>
+                            Date : {{ $v->date_depart->format('d/m/Y') }} {{ $v->heure_depart }} <br>
+                            Véhicule : {{ $v->voiture->marque }} {{ $v->voiture->modele }} ({{ $v->voiture->immatriculation }})
+                        </div>
 
                         {{-- Droite --}}
                         <div class="d-flex flex-column align-items-end">
-                            <span class="fw-bold">{{ $v->prix_personne }} crédits / {{ $v->nb_place }} places</span>
+                            {{-- Boutons actions covoiturage --}}
+                            <div class="d-flex gap-2 mt-2">
+                                {{-- Bouton démarrer / arrivée --}}
+                                @if($v->statut === 'ouvert')
+                                    <form action="{{ route('covoiturage.demarrer', $v->id) }}" method="POST" onsubmit="return confirm('Voulez-vous vraiment démarrer ce covoiturage ?');">
+                                        @csrf
+                                        <button type="submit" class="btn btn-primary btn-sm">Démarrer</button>
+                                    </form>
+                                @elseif($v->statut === 'en_cours')
+                                    <form action="{{ route('covoiturage.arrivee', $v->id) }}" method="POST" onsubmit="return confirm('Voulez-vous vraiment clore ce covoiturage ?');">
+                                        @csrf
+                                        <button type="submit" class="btn btn-success btn-sm">Arrivée à destination</button>
+                                    </form>
+                                @endif
 
-                        {{-- Bouton annuler chauffeur --}}
+                                {{-- Bouton annuler chauffeur --}}
+                                @if($v->peutAnnuler())
+                                    <button type="button" class="btn btn-danger btn-sm"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#confirmCancelModal-{{ $v->id }}">
+                                        <i class="bi bi-x-circle"></i> Annuler
+                                    </button>
+                                @endif
+                            </div>
+
+                            {{-- Prix / places --}}
+                            <span class="fw-bold mt-1">{{ $v->prix_personne }} crédits / {{ $v->nb_place }} places</span>
+
+                            {{-- Modal de confirmation annulation --}}
                             @if($v->peutAnnuler())
-                                <button type="button" class="btn btn-danger btn-sm mt-2"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#confirmCancelModal-{{ $v->id }}">
-                                    <i class="bi bi-x-circle"></i> Annuler
-                                </button>
-
-                                {{-- Modal de confirmation --}}
                                 <div class="modal fade" id="confirmCancelModal-{{ $v->id }}" tabindex="-1" aria-hidden="true">
                                     <div class="modal-dialog modal-dialog-centered">
                                         <div class="modal-content border-0 shadow-lg rounded-3">
@@ -325,6 +344,64 @@ $roleInitial = in_array('chauffeur', $rolesUtilisateur) && in_array('passager', 
             </div>
         @else
             <p class="text-muted">Aucun trajet annulé.</p>
+        @endif
+
+        {{-- === Trajets terminés (chauffeur) === --}}
+        <h5 class="mt-4">Trajets terminés (chauffeur)</h5>
+
+        @if($voyagesChauffeurTermines->count())
+            <div class="list-group mb-4">
+                @foreach($voyagesChauffeurTermines as $v)
+                    <div class="list-group-item bg-light">
+
+                        <strong>{{ $v->lieu_depart }} → {{ $v->lieu_arrivee }}</strong><br>
+
+                        <p class="mb-1">
+                            {{ $v->date_depart->format('d/m/Y') }} {{ $v->heure_depart }} <br>
+                            {{ $v->voiture->marque }} {{ $v->voiture->modele }} <br>
+                            {{ $v->voiture->immatriculation }}
+                        </p>
+
+                        <small class="text-success">Statut : terminé</small>
+
+                        {{-- Suppression définitive --}}
+                        <form action="{{ route('covoiturage.supprimer.definitif', $v->id) }}" method="POST" class="mt-2">
+                            @csrf
+                            @method('DELETE')
+                            <button type="button" class="btn btn-danger btn-sm mt-2"
+                                data-bs-toggle="modal"
+                                data-bs-target="#confirmDeleteModalTermine-{{ $v->id }}">
+                                <i class="bi bi-trash"></i> Supprimer définitivement
+                            </button>
+
+                            <div class="modal fade" id="confirmDeleteModalTermine-{{ $v->id }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content border-0 shadow-lg rounded-3">
+                                        <div class="modal-header bg-danger text-white">
+                                            <h5 class="modal-title">Confirmation</h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p>Voulez-vous vraiment supprimer ce trajet définitivement ? Cette action est irréversible.</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <form action="{{ route('covoiturage.supprimer.definitif', $v->id) }}" method="POST">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-danger">Supprimer</button>
+                                            </form>
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+
+                    </div>
+                @endforeach
+            </div>
+        @else
+            <p class="text-muted">Aucun trajet terminé.</p>
         @endif
 
         {{-- VOS RÉSERVATIONS (PASSAGER) --}}
@@ -440,6 +517,49 @@ $roleInitial = in_array('chauffeur', $rolesUtilisateur) && in_array('passager', 
                 </div>
             @else
                 <p class="text-muted">Aucun trajet annulé.</p>
+            @endif
+
+            {{-- === Trajets terminés (passager) === --}}
+            <h5 class="mt-4">Trajets terminés (passager)</h5>
+
+            @if($voyagesPassagerTermines->count())
+                <div class="list-group mb-4">
+                    @foreach($voyagesPassagerTermines as $v)
+                        <div class="list-group-item bg-light">
+
+                            <strong>{{ $v->covoiturage->lieu_depart }} → {{ $v->covoiturage->lieu_arrivee }}</strong><br>
+                            Date : {{ $v->covoiturage->date_depart->format('d/m/Y') }} {{ $v->covoiturage->heure_depart }} <br>
+                            Chauffeur : {{ $v->covoiturage->chauffeur->pseudo }} <br>
+                            Statut : <span class="text-success">terminé</span>
+
+                            {{-- Validation passager --}}
+                            @if($v->validation_passager === 'en_attente')
+                                <form action="{{ route('reservation.validerPassager', $v->covoiturage_id) }}" method="POST" class="mt-2">
+                                    @csrf
+                                    <label class="form-label">Tout s’est bien passé ?</label>
+                                    <div class="d-flex gap-2 mb-2">
+                                        <button type="submit" name="action" value="ok" class="btn btn-success btn-sm">Oui ✅</button>
+                                        <button type="submit" name="action" value="probleme" class="btn btn-danger btn-sm">Non ⚠️</button>
+                                    </div>
+
+                                    <div>
+                                        <label>Note (1-5)</label>
+                                        <input type="number" name="note" min="1" max="5" class="form-control form-control-sm mb-1">
+                                        <label>Commentaire</label>
+                                        <textarea name="commentaire" class="form-control form-control-sm"></textarea>
+                                    </div>
+                                </form>
+                            @elseif($v->validation_passager === 'ok')
+                                <span class="text-success fw-bold">Trajet validé ✅</span>
+                            @elseif($v->validation_passager === 'probleme')
+                                <span class="text-danger fw-bold">Problème signalé ⚠️</span>
+                            @endif
+
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <p class="text-muted">Aucun trajet terminé.</p>
             @endif
         </div>
     </div>

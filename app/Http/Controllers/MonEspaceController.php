@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Voiture;
 use App\Models\Covoiturage;
+use App\Models\Reservation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -18,7 +19,7 @@ class MonEspaceController extends Controller
 
         // Chauffeur - trajets actifs
         $voyagesChauffeurActifs = Covoiturage::where('utilisateur_id', $user->id)
-            ->where('statut', '!=', 'annule')
+            ->whereNotIn('statut', ['annule', 'termine'])
             ->with('voiture')
             ->latest()
             ->get();
@@ -30,24 +31,42 @@ class MonEspaceController extends Controller
             ->latest()
             ->get();
 
-        // Passager - trajets actifs
-        $voyagesPassagerActifs = Covoiturage::whereHas('reservations', function ($q) use ($user) {
-                $q->where('utilisateur_id', $user->id)
-                    ->where('statut', 'confirmée'); // uniquement réservations confirmées
-            })
-            ->where('statut', '!=', 'annule')
+        // Chauffeur - trajets terminés
+        $voyagesChauffeurTermines = Covoiturage::where('utilisateur_id', $user->id)
+            ->where('statut', 'termine')
             ->with('voiture')
             ->latest()
             ->get();
 
+
+        // Trajets passager actifs
+        $voyagesPassagerActifs = Covoiturage::whereHas('reservations', function ($q) use ($user) {
+            $q->where('utilisateur_id', $user->id)
+            ->where('statut', 'confirmée');
+        })
+        ->whereIn('statut', ['ouvert', 'en_cours'])
+        ->with('chauffeur')
+        ->latest()
+        ->get();
+
         // Passager - trajets annulés
         $voyagesPassagerAnnules = Covoiturage::whereHas('reservations', function ($q) use ($user) {
                 $q->where('utilisateur_id', $user->id)
-                    ->where('statut', 'annule'); // uniquement réservations annulées
+                    ->where('statut', 'annule');
             })
             ->with('voiture')
             ->latest()
             ->get();
+            
+        // Passager - trajets terminés
+        $voyagesPassagerTermines = Reservation::with('covoiturage.chauffeur')
+            ->where('utilisateur_id', $user->id)
+            ->whereHas('covoiturage', function($q) {
+                $q->where('statut', 'termine');
+            })
+            ->get();
+
+
 
         return view('mon-espace', compact(
             'user',
@@ -55,7 +74,10 @@ class MonEspaceController extends Controller
             'voyagesChauffeurActifs',
             'voyagesChauffeurAnnules',
             'voyagesPassagerActifs',
-            'voyagesPassagerAnnules'
+            'voyagesPassagerAnnules',
+            'voyagesChauffeurTermines',
+            'voyagesPassagerTermines'
+
         ));
     }
 
@@ -66,18 +88,18 @@ class MonEspaceController extends Controller
         $voyage = Covoiturage::with('reservations')->findOrFail($id);
 
         if ($voyage->utilisateur_id === $user->id) {
-            // Chauffeur → peut supprimer définitivement le covoiturage
+            // Chauffeur peut supprimer définitivement le covoiturage
             $voyage->delete();
             return back()->with('success', 'Trajet supprimé définitivement.');
         }
 
-        // Passager → supprimer seulement sa réservation
+        // Passager supprimer seulement sa réservation
         $reservation = $voyage->reservations()
             ->where('utilisateur_id', $user->id)
             ->first();
 
         if ($reservation) {
-            $reservation->delete(); // ou mettre 'statut' = 'supprime'
+            $reservation->delete();
             return back()->with('success', 'Réservation supprimée de votre vue.');
         }
 
