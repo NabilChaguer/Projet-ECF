@@ -11,7 +11,8 @@ class Reservation extends Model
     protected $fillable = [
         'utilisateur_id',
         'covoiturage_id',
-        'statut'
+        'statut',
+        'validation_passager'
     ];
 
     public function utilisateur()
