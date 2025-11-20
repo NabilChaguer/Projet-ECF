@@ -4,7 +4,6 @@
 
 @section('content')
 
-@vite('resources/js/saisir-un-voyage.js')
 
 <div class="container py-5 mt-5">
     <div class="card shadow-lg border-0">
