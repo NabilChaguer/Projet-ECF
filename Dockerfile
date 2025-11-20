@@ -26,15 +26,20 @@ WORKDIR /var/www/html
 
 # Installer les dépendances PHP (sans scripts artisan)
 COPY composer.json composer.lock ./
-RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
+RUN composer install --optimize-autoloader --no-interaction --no-scripts
 
 # Copier le reste de l'application
 COPY . .
 
-# Préparer la base SQLite + permissions Laravel
-RUN mkdir -p database \
+# Préparer la base SQLite + dossiers de cache Laravel
+RUN mkdir -p \
+        storage/framework/cache \
+        storage/framework/sessions \
+        storage/framework/views \
+        database \
     && touch database/database.sqlite \
     && chown -R www-data:www-data storage bootstrap/cache database
+
 
 # Variables par défaut
 ENV APP_ENV=production
