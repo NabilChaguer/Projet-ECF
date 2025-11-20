@@ -44,7 +44,7 @@ WORKDIR /var/www/html
 
 # Installer dépendances PHP
 COPY composer.json composer.lock ./
-RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
+RUN composer install --optimize-autoloader --no-interaction --no-scripts
 
 # Copier tout le code Laravel
 COPY . .
