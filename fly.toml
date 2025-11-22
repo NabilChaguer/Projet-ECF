@@ -5,12 +5,24 @@ primary_region = "cdg"
   dockerfile = "Dockerfile"
 
 [env]
+  APP_NAME = "EcoRide"
   APP_ENV = "production"
   APP_DEBUG = "false"
+  APP_URL = "https://projet-ecf.fly.dev"
+  DB_CONNECTION = "sqlite"
+  DB_DATABASE = "/data/database.sqlite"
+  SESSION_DRIVER = "database"
+  CACHE_STORE = "database"
+  QUEUE_CONNECTION = "database"
+  FORCE_HTTPS = "true"
 
 [http_service]
   internal_port = 8080
   force_https = true
   auto_stop_machines = true
   auto_start_machines = true
-  min_machines_running = 0
+  min_machines_running = 1
+
+[mounts]
+source = "data"
+destination = "/data"
